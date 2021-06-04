@@ -1,97 +1,140 @@
 package com.namib.ghosting;
 
 import android.annotation.SuppressLint;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
 public class GhostSession extends AppCompatActivity {
+
+    private TextView directionView;
+    private TextView restView;
+    private CountDownTimer timer;
+    private CountDownTimer restTimer;
+
+    private Bundle extras;
+    private long sets;
+    private long rest;
+    private long shots;
+    private long time;
+    private boolean restInBetween;
+
+    private String[] directions = {"Front Right", "Front Left",
+            "Volley Left", "Volley Right",
+            "Back Left", "Back Right"};
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ghost_session_layout);
 
-        Bundle extras = getIntent().getExtras();
-        int sets = extras.getInt("sets");
-        int rest = extras.getInt("rest");
-        int shots = extras.getInt("shots");
-        int time = extras.getInt("time");
+        directionView = (TextView) findViewById(R.id.directionTextView2);
+        restView = (TextView) findViewById(R.id.restView2);
 
-        if (sets == 1) {
-            directionTicker((long) time, R.id.directionTextView, (long) shots, (long) rest);
-        }
-        else {
-            for (int j = 0; j < sets; j++) {
-                // BUG Runs all at once
-                // every x seconds display y
-                directionTicker((long) time, R.id.directionTextView, (long) shots, (long) rest);
-            }
-        }
+        extras = getIntent().getExtras();
+        sets = (long) extras.getInt("sets");
+        rest = (long) extras.getInt("rest");
+        shots = (long) extras.getInt("shots");
+        time = (long) extras.getInt("time");
+        Log.d("input", "onCreate: " + getSets());
+
+        runSet().start();
     }
 
-    // every x seconds display random direction
-    public void directionTicker(long seconds, int viewId, long shots, long rest) {
-        long milliseconds = seconds * 1000 * shots;
-        TextView view =  (TextView) findViewById(viewId);
-        CountDownTimer timer = new CountDownTimer(milliseconds, 1000 * seconds) {
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-            @SuppressLint("SetTextI18n")
+    private void reduceSetsByOne() {
+        this.sets -= 1;
+    }
+
+    private long getSets() {
+        return this.sets;
+    }
+
+    public boolean isRestInBetween() {
+        return restInBetween;
+    }
+
+    public void setRestInBetween(boolean restInBetween) {
+        this.restInBetween = restInBetween;
+    }
+
+    private void rerunSet() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                runSet().start();
+            }
+        });
+    }
+     private void rerunRest() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                runRest().start();
+            }
+        });
+     }
+
+    private CountDownTimer runSet() {
+        Log.d("sets", "runSet: run");
+        if (getSets() == 1) {
+            setRestInBetween(false);
+        }
+        restView.setText("");
+        long milliseconds = time * 1000 * shots;
+        timer = new CountDownTimer(milliseconds, 1000 * time) {
             @Override
             public void onTick(long millisUntilFinished) {
                 Log.d("TICK", "onTick: " + millisUntilFinished / 1000);
-                view.setText(randomDir());
+                directionView.setText(randomDirection());
             }
 
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onFinish() {
-                view.setText("Done");
-                // restTimer((long) rest, R.id.directionTextView);
+                if (getSets() > 1) {
+                    rerunRest();
+                    reduceSetsByOne();
+                }
+                else {
+                    directionView.setText("done mate");
+                }
             }
-        }.start();
+        };
+        return timer;
     }
 
-    // used in directionTicker()
-    // chooses random direction
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public static String randomDir() {
-        String[] directions = {"Front Right", "Front Left",
-                "Volley Left", "Volley Right",
-                "Back Left", "Back Right"};
-        int randomNr = ThreadLocalRandom.current().nextInt(0, 6);
-        return directions[randomNr];
-    }
-
-    // rest x seconds between sets
-    public void restTimer(long seconds, int viewId) {
-        long milliseconds = seconds * 1000;
-        TextView view =  (TextView) findViewById(viewId);
-        TextView restView = (TextView) findViewById(R.id.restView);
-        restView.setText("REST DAWG");
-
-        CountDownTimer timer = new CountDownTimer(milliseconds, 1000) {
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private CountDownTimer runRest() {
+        restView.setText("Rest Dawg");
+        restTimer = new CountDownTimer(rest * 1000, 1000) {
             @SuppressLint("SetTextI18n")
             @Override
             public void onTick(long millisUntilFinished) {
-                Log.d("TICK", "onTick: " + millisUntilFinished / 1000);
-
-                view.setText(Long.toString(millisUntilFinished/1000) + "s");
+                directionView.setText(Long.toString(millisUntilFinished/1000) + " s");
             }
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+
             @Override
             public void onFinish() {
-                restView.setText("");
-                view.setText("");
+                if (getSets() >= 1) {
+                    rerunSet();
+                }
+                else {
+                    directionView.setText("Done mate");
+                }
             }
-        }.start();
+        };
+        return restTimer;
+    }
+
+    // to generate a random direction
+    private String randomDirection() {
+        int randomInt;
+        Random random = new Random();
+        randomInt = random.nextInt(6);
+        return directions[randomInt];
     }
 }
