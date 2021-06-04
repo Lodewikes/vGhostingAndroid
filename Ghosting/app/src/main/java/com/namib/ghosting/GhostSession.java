@@ -1,18 +1,19 @@
 package com.namib.ghosting;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 
 public class GhostSession extends AppCompatActivity {
@@ -21,6 +22,7 @@ public class GhostSession extends AppCompatActivity {
     private TextView restView;
     private CountDownTimer timer;
     private CountDownTimer restTimer;
+    private Button quitButton;
 
     private Bundle extras;
     private long sets;
@@ -29,7 +31,7 @@ public class GhostSession extends AppCompatActivity {
     private long time;
     private boolean restInBetween;
 
-    private MediaPlayer bite;
+    private MediaPlayer soundBite;
 
     private String[] directions = {"Front Right", "Front Left",
             "Volley Left", "Volley Right",
@@ -58,6 +60,18 @@ public class GhostSession extends AppCompatActivity {
         dirs.put("Volley Right", R.raw.volleyright);
         dirs.put("Back Left", R.raw.backleft);
         dirs.put("Back Right", R.raw.backright);
+
+        quitButton = (Button) findViewById(R.id.quitButton);
+        quitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                timer.cancel();
+                restTimer.cancel();
+                soundBite.stop();
+                Intent intent = new Intent(GhostSession.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
 
         runSet().start();
     }
@@ -107,8 +121,8 @@ public class GhostSession extends AppCompatActivity {
             public void onTick(long millisUntilFinished) {
                 Log.d("TICK", "onTick: " + millisUntilFinished / 1000);
                 String dir = randomDirection();
-                bite = MediaPlayer.create(GhostSession.this, getSoundId(dir));
-                bite.start();
+                soundBite = MediaPlayer.create(GhostSession.this, getSoundId(dir));
+                soundBite.start();
                 directionView.setText(dir);
             }
 
