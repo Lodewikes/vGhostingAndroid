@@ -3,6 +3,7 @@ package com.namib.ghosting;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -58,6 +59,7 @@ public class GhostSesh extends AppCompatActivity {
         CountDownTimer timer = new CountDownTimer(milliseconds, 1000 * time) {
             @Override
             public void onTick(long millisUntilFinished) {
+                Log.d("TICK", "onTick: " + millisUntilFinished / 1000);
                 directionView.setText(randomDirection());
             }
 
@@ -95,6 +97,6 @@ public class GhostSesh extends AppCompatActivity {
                 randomInt = random.nextInt(6);
                 return directions[randomInt];
             }
-        };
+        }.start();
     }
 }
