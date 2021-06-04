@@ -1,6 +1,7 @@
 package com.namib.ghosting;
 
 import android.annotation.SuppressLint;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -9,6 +10,9 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 public class GhostSession extends AppCompatActivity {
@@ -25,9 +29,12 @@ public class GhostSession extends AppCompatActivity {
     private long time;
     private boolean restInBetween;
 
+    private MediaPlayer bite;
+
     private String[] directions = {"Front Right", "Front Left",
             "Volley Left", "Volley Right",
             "Back Left", "Back Right"};
+    private HashMap<String, Integer> dirs;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,6 +50,14 @@ public class GhostSession extends AppCompatActivity {
         shots = (long) extras.getInt("shots");
         time = (long) extras.getInt("time");
         Log.d("input", "onCreate: " + getSets());
+
+        dirs = new HashMap<>();
+        dirs.put("Front Right", R.raw.frontright);
+        dirs.put("Front Left", R.raw.frontleft);
+        dirs.put("Volley Left", R.raw.volleyleft);
+        dirs.put("Volley Right", R.raw.volleyright);
+        dirs.put("Back Left", R.raw.backleft);
+        dirs.put("Back Right", R.raw.backright);
 
         runSet().start();
     }
@@ -91,7 +106,10 @@ public class GhostSession extends AppCompatActivity {
             @Override
             public void onTick(long millisUntilFinished) {
                 Log.d("TICK", "onTick: " + millisUntilFinished / 1000);
-                directionView.setText(randomDirection());
+                String dir = randomDirection();
+                bite = MediaPlayer.create(GhostSession.this, getSoundId(dir));
+                bite.start();
+                directionView.setText(dir);
             }
 
             @Override
@@ -136,5 +154,9 @@ public class GhostSession extends AppCompatActivity {
         Random random = new Random();
         randomInt = random.nextInt(6);
         return directions[randomInt];
+    }
+
+    private int getSoundId(String direction) {
+        return dirs.get(direction);
     }
 }
