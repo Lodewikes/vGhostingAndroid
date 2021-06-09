@@ -1,4 +1,4 @@
-# vGhostingAndroid 
+# Virtual Ghosting App 
 #### Video Demo:  <URL HERE> 
 #### Description: 
 virtual squash ghosting application in android \
