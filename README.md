@@ -2,7 +2,7 @@
 #### Video Demo:  <https://www.youtube.com/watch?v=FLX99h3AAXE> 
 #### Description: 
 Virtual squash ghosting application in android \
-Shouts an area on the court at random for your ghosting session \
+Shouts an area on the court at random for your ghosting session 
 
 The application was written in java and consists of 3 activities. \
 MainActivity.java controls the activity_main.xmml layout where all the settings for your session can be input.
